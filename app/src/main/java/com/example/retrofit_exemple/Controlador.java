@@ -6,7 +6,8 @@ import retrofit2.http.Path;
 
 public interface Controlador {
 
-    @GET("alumne/{id}/")
-    Call<Alumne> getAlumne(@Path("id") int id);
+    @GET("api/contacteTot/{id}")
+    Call<Contacte> getContacte(@Path("id") int id);
+
 
 }
