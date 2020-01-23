@@ -39,4 +39,8 @@ public class Contacte {
         this.cognoms = cognoms;
     }
 
+    @Override
+    public String toString() {
+        return   cognoms + ", " + nom;
+    }
 }
