@@ -2,6 +2,7 @@ package com.example.retrofit_exemple;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,7 +27,9 @@ public class MainActivity extends AppCompatActivity {
 
     Controlador service;
 
-    Button btEsborrar;
+    EditText etNouCognom;
+    EditText etNouNom;
+    Button btAfegir;
     Button bt_buscar;
     EditText et_id;
     EditText et_nom;
@@ -42,14 +45,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btEsborrar = findViewById(R.id.btAfegir);
+        etNouCognom = findViewById(R.id.etNouCognom);
+        etNouNom = findViewById(R.id.etNouNom);
+        btAfegir = findViewById(R.id.btAfegir);
         bt_buscar = findViewById(R.id.button_buscar);
         et_id  = findViewById(R.id.editText_id);
         listView = findViewById(R.id.listView);
 
-
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://10.0.2.2:8085/api/")
+                .baseUrl("http://10.0.2.2:44300/api/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -64,17 +68,20 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                 Contacte contacte = (Contacte)listView.getItemAtPosition(position);
-                Call<ResponseBody> call = service.deleteContacte(contacte.getContacteId());
-                call.enqueue(new Callback<ResponseBody>() {
+                Log.e("eeeeeeee",contacte.getContacteId() + "");
+                Call<Void> call = service.deleteContacte(contacte.getContacteId());
+                call.enqueue(new Callback<Void>() {
                     @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    public void onResponse(Call<Void> call, Response<Void> response) {
                         Toast.makeText(MainActivity.this, "Esborrat satisfactòriament.", Toast.LENGTH_SHORT).show();
                         selectAllContactes();
+                        Log.e("eeeeeeee",response.message());
                     }
 
                     @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    public void onFailure(Call<Void> call, Throwable t) {
                         Toast.makeText(MainActivity.this, "Problema al esborrar.", Toast.LENGTH_SHORT).show();
+                        Log.e("eeeeeeee",t.getMessage());
                     }
                 });
             }
@@ -95,13 +102,13 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             if (contacte != null) {
                                 listaContactes.clear();
+                                adapterContactes.clear();
                                 listaContactes.add(contacte);
                                 adapterContactes.notifyDataSetChanged();
                             }
                         } catch (Exception e) {
                             Log.e("eeeeeeee", e.toString());
                         }
-
                     }
 
                     @Override
@@ -112,35 +119,29 @@ public class MainActivity extends AppCompatActivity {
 
                     }
                 });
-//                Call<Alumne> call = service.getAlumne(Integer.parseInt(et_id.getText().toString()));
-//
-//                call.enqueue(new Callback<Alumne>() {
-//                    @Override
-//                    public void onResponse(Call<Alumne> call, Response<Alumne> response) {
-//
-//                        //recuperem l'objecte (el comic)
-//                        Alumne comic = response.body();
-//
-//                        try {
-//
-//                            if (comic != null) {
-//                                et_nom.setText(comic.getNom());
-//                                et_edat.setText(comic.getEdat());
-//                            }
-//                        } catch (Exception e) {
-//                            Log.e("MainActivity", e.toString());
-//                        }
-//
-//                    }
-//
-//                    @Override
-//                    public void onFailure(Call<Alumne> call, Throwable t) {
-//
-//                        Toast.makeText(MainActivity.this, "Error amb l'API", Toast.LENGTH_SHORT).show();
-//
-//                    }
-//                });
+            }
+        });
+    }
 
+    public void afegirNouContacte(View view) {
+
+        Contacte contacte = new Contacte();
+        contacte.setNom(etNouNom.getText().toString());
+        contacte.setCognoms(etNouCognom.getText().toString());
+        Log.i("eeeeeeee", contacte.getNom());
+        Log.i("eeeeeeee", contacte.getCognoms());
+        Call<Contacte> call = service.afegirContacte(contacte);
+        call.enqueue(new Callback<Contacte>() {
+            @Override
+            public void onResponse(Call<Contacte> call, Response<Contacte> response) {
+                Toast.makeText(MainActivity.this, "Afegit nou contacte.", Toast.LENGTH_SHORT).show();
+                Log.i("eeeeeeee", response.message());
+                Log.i("eeeeeeee", "1");
+                selectAllContactes();
+            }
+
+            @Override
+            public void onFailure(Call<Contacte> call, Throwable t) {
 
             }
         });
@@ -154,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<List<Contacte>> call, Response<List<Contacte>> response) {
 
                 listaContactes.clear();
+                adapterContactes.clear();
                 listaContactes.addAll(response.body());
                 adapterContactes.notifyDataSetChanged();
             }
